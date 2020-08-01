@@ -27,11 +27,27 @@
  */
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
+import {
+    HashRouter as Router, 
+    Route,
+    Switch
+} from 'react-router-dom'
 import './index.css';
 
 const elem = <div>
     home
 </div>
-ReactDOM.render(elem, document.getElementById('home'))
+interface IAppProps {
+    history: any
+}
+function App(props: IAppProps) {
+
+}
+const router = <Router>
+    <Route path={'/about'} render={() => "about"}></Route>
+    <Route path={'/'} render={() => "home"}></Route>
+    <Route path={'/:user?'} render={() => "user"}></Route>
+</Router>
+ReactDOM.render(router, document.getElementById('home'))
 
 console.log('👋 This message is being logged by "renderer.js", included via webpack');
