@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "main": "./index.js",
   "private": true,
+  "scripts": {
+    "start": "electron ."
+  },
   "dependencies": {
     "electron": "^9.1.2"
   }
