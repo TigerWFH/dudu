@@ -22,8 +22,9 @@ const template: any[] = [
       {
         label: '返回',
         click: function() {
+          console.log("return")
           if (mainWindow) {
-            mainWindow.webContents.send("monkey", 1)
+            mainWindow.webContents.send("monkey", app.getAppPath())
           }
         }
       }
@@ -38,6 +39,9 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 }
 
 const createWindow = () => {
+  console.log("version=====>", app.getVersion())
+  console.log("appPath---->", app.getAppPath())
+  console.log("pwd--->", process.cwd())
   // Create the browser window.
   mainWindow = new BrowserWindow({
     height: 600,
