@@ -2,9 +2,9 @@ import {
   app, 
   BrowserWindow,
   Menu,
-  MenuItem
  } from 'electron';
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
+let mainWindow: BrowserWindow = null
 
 const template: any[] = [
   {
@@ -20,7 +20,12 @@ const template: any[] = [
     label: '关于',
     submenu: [
       {
-        label: '版本'
+        label: '返回',
+        click: function() {
+          if (mainWindow) {
+            mainWindow.webContents.send("monkey", 1)
+          }
+        }
       }
     ]
   }
@@ -34,13 +39,16 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 
 const createWindow = () => {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
+    webPreferences: {
+      nodeIntegration: true
+    }
   });
 
   // and load the index.html of the app.
-  mainWindow.loadURL(`${MAIN_WINDOW_WEBPACK_ENTRY}#/about`);
+  mainWindow.loadURL(`${MAIN_WINDOW_WEBPACK_ENTRY}`);
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();

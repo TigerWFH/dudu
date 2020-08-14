@@ -28,26 +28,42 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import {
-    HashRouter as Router, 
+    Router,
     Route,
     Switch
 } from 'react-router-dom'
+import { createHashHistory } from 'history'
+import Home from './pages/home'
+import About from './pages/about'
+import Demo from './pages/demo'
+const { 
+    ipcRenderer,
+    remote
+} = require('electron')
+const {
+    dialog
+} = remote
 import './index.css';
 
-const elem = <div>
-    home
-</div>
+const history = createHashHistory()
+ipcRenderer.on('monkey', function(event, args) {
+    console.log("renderer recieve message args===>", args)
+    history.goBack()
+})
+
 interface IAppProps {
     history: any
 }
 function App(props: IAppProps) {
 
 }
-const router = <Router>
-    <Route path={'/about'} render={() => "about"}></Route>
-    <Route path={'/'} render={() => "home"}></Route>
-    <Route path={'/:user?'} render={() => "user"}></Route>
+const router = <Router history={history}>
+    <Switch>
+        <Route exact path={'/'} component={Home}></Route>
+        <Route exact path={'/about'} component={About}></Route>
+        <Route exact path={'/demo'} component={Demo}></Route>
+        <Route component={Home}></Route>
+    </Switch>
 </Router>
-ReactDOM.render(router, document.getElementById('home'))
 
-console.log('👋 This message is being logged by "renderer.js", included via webpack');
+ReactDOM.render(router, document.getElementById('home'))
