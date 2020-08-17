@@ -1,4 +1,18 @@
 # electron项目，js试验田
+# electron应用更新
+* `全量更新：`更细所有文件，包括主应用
+* `热更新：`只更新业务应用页面
+* `官方更新工具：`利用内置的squirrel框架和Electron的autoUpdate模块
+# 搭建免费的部署更新服务器
+[Hazel](https://github.com/vercel/hazel)
+
+[Now](https://vercel.com/home#get-started)
+
+[github releases]()
+```
+    Hazel – 用于私人或开源应用的更新服务器，可以在 Now 上免费部署。 它从GitHub Releases中拉取更新文件，并且利用 GitHub CDN 的强大性能
+    1、注册Now
+```
 # 打包工具： electron-packager
 # react-router-dom
 * `Router:`
