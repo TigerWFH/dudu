@@ -19,8 +19,7 @@
         2-1：全局安装vercel： npm i -g vercel
         2-2：克隆hazel项目到本地：git clone https://github.com/zeit/haze
         2-3：进入到hazel目录：cd hazel
-        2-4：创建部署配置：now -e ACCOUNT="github-account" -e REPOSITORY="github-repository"
-        2-5：
+        2-4：创建部署配置：vercel -e ACCOUNT="github-account" -e REPOSITORY="github-repository"
 ```
 # 打包工具： electron-packager
 # react-router-dom
