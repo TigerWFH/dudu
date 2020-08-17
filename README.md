@@ -9,9 +9,17 @@
 [Now](https://vercel.com/home#get-started)
 
 [github releases]()
+
+[详细](https://github.com/vercel/hazel)
 ```
     Hazel – 用于私人或开源应用的更新服务器，可以在 Now 上免费部署。 它从GitHub Releases中拉取更新文件，并且利用 GitHub CDN 的强大性能
-    1、注册Now
+    1、注册Now并在Now上部署自己的应用
+    2、使用hazel项目，部署能够对接electron的autoupdate模块的应用
+        2-1：全局安装vercel： npm i -g vercel
+        2-2：克隆hazel项目到本地：git clone https://github.com/zeit/haze
+        2-3：进入到hazel目录：cd hazel
+        2-4：创建部署配置：now -e ACCOUNT="github-account" -e REPOSITORY="github-repository"
+        2-5：
 ```
 # 打包工具： electron-packager
 # react-router-dom
