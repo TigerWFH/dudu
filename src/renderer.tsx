@@ -46,7 +46,7 @@ const {
 import './index.css';
 
 const history = createHashHistory()
-ipcRenderer.on('monkey', function(event, args) {
+ipcRenderer.on('monkey', function(event: any, args: any[]) {
     console.log("renderer recieve message args===>", args)
     history.goBack()
 })
