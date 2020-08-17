@@ -11,6 +11,7 @@
 [github releases]()
 
 [详细](https://github.com/vercel/hazel)
+* `管理地址：`https://vercel.com/dashboard/projects
 ```
     Hazel – 用于私人或开源应用的更新服务器，可以在 Now 上免费部署。 它从GitHub Releases中拉取更新文件，并且利用 GitHub CDN 的强大性能
     1、注册Now并在Now上部署自己的应用
