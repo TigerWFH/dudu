@@ -7,27 +7,27 @@ import {
  } from 'electron';
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
 let mainWindow: BrowserWindow = null
-const server = 'https://dudu.fhw.vercel.app'
-const url = `${server}/update/${process.platform}/${app.getVersion()}`
-autoUpdater.setFeedURL({url})
-autoUpdater.checkForUpdates()
-autoUpdater.on('update-downloaded', (event: any, releaseNotes: any, releaseName: any) => {
-  const dialogOpts = {
-    type: 'info',
-    buttons: ['Restart', 'Later'],
-    title: 'Application Update',
-    message: process.platform === 'win32' ? releaseNotes : releaseName,
-    detail: 'A new version has been downloaded. Restart the application to apply the updates.'
-  }
+// const server = 'https://dudu.fhw.vercel.app'
+// const url = `${server}/update/${process.platform}/${app.getVersion()}`
+// autoUpdater.setFeedURL({url})
+// autoUpdater.checkForUpdates()
+// autoUpdater.on('update-downloaded', (event: any, releaseNotes: any, releaseName: any) => {
+//   const dialogOpts = {
+//     type: 'info',
+//     buttons: ['Restart', 'Later'],
+//     title: 'Application Update',
+//     message: process.platform === 'win32' ? releaseNotes : releaseName,
+//     detail: 'A new version has been downloaded. Restart the application to apply the updates.'
+//   }
 
-  dialog.showMessageBox(dialogOpts).then((returnValue) => {
-    if (returnValue.response === 0) autoUpdater.quitAndInstall()
-  })
-})
-autoUpdater.on('error', message => {
-  console.error('There was a problem updating the application')
-  console.error(message)
-})
+//   dialog.showMessageBox(dialogOpts).then((returnValue) => {
+//     if (returnValue.response === 0) autoUpdater.quitAndInstall()
+//   })
+// })
+// autoUpdater.on('error', message => {
+//   console.error('There was a problem updating the application')
+//   console.error(message)
+// })
 const template: any[] = [
   {
     label: '编辑',
@@ -35,22 +35,25 @@ const template: any[] = [
       {
         label: '加载',
         role: 'reload'
-      }
-    ]
-  },
-  {
-    label: '关于',
-    submenu: [
+      },
       {
         label: '返回',
         click: function() {
-          console.log("return")
           if (mainWindow) {
             mainWindow.webContents.send("monkey", app.getAppPath())
           }
         }
       }
     ]
+  },
+  {
+    label: '关于',
+    click: function() {
+      dialog.showMessageBoxSync(null, {
+        title: "dudu软件",
+        message: app.getVersion()
+      })
+    }
   }
 ]
 const menu = Menu.buildFromTemplate(template)
