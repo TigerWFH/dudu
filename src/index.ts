@@ -39,9 +39,12 @@ const template: any[] = [
       {
         label: '返回',
         click: function() {
-          if (mainWindow) {
-            mainWindow.webContents.send("monkey", app.getAppPath())
+          if (mainWindow.webContents.canGoBack()) {
+            mainWindow.webContents.goBack()
           }
+          // if (mainWindow) {
+          //   mainWindow.webContents.send("monkey", app.getAppPath())
+          // }
         }
       }
     ]
