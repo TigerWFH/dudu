@@ -67,3 +67,5 @@
     // 使用Switch，/about则只会匹配第一个child route或redirect
 ```
 * `Link:`
+# vscode参考资料
+[vscode源码参考资料](https://www.cnblogs.com/liulun/p/11037550.html)

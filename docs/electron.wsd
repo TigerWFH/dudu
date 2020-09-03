@@ -1,0 +1,24 @@
+@startuml electron module class
+    class NodeJS.EventEmitter {
+    }
+    NodeJS.EventEmitter <|-- Electron.App
+    NodeJS.EventEmitter <|-- Electron.BrowserWindow
+    NodeJS.EventEmitter <|-- Electron.Screen
+    NodeJS.EventEmitter <|-- Electron.PowerMonitor
+    NodeJS.EventEmitter <|-- Electron.Notification
+    NodeJS.EventEmitter <|-- Electron.NativeTheme
+    NodeJS.EventEmitter <|-- Electron.ServiceWorkers
+    NodeJS.EventEmitter <|-- Electron.Session
+    NodeJS.EventEmitter <|-- Electron.SystemPreferences
+    NodeJS.EventEmitter <|-- Electron.TouchBarColorPicker
+    NodeJS.EventEmitter <|-- Electron.TouchBarGroup
+    NodeJS.EventEmitter <|-- Electron.TouchBarLabel
+    NodeJS.EventEmitter <|-- Electron.TouchBarPopover
+    NodeJS.EventEmitter <|-- Electron.TouchBarScrubber
+    NodeJS.EventEmitter <|-- Electron.TouchBarSegmentedControl
+    NodeJS.EventEmitter <|-- Electron.TouchBarSlider
+    NodeJS.EventEmitter <|-- Electron.TouchBarSpacer
+    NodeJS.EventEmitter <|-- Electron.Tray
+    NodeJS.EventEmitter <|-- Electron.WebContents
+    NodeJS.EventEmitter <|-- Electron.WebFrame
+@enduml
