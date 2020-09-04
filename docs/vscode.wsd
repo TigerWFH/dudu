@@ -1,0 +1,123 @@
+@startuml vscode class
+' A..>B：A依赖B，关系最弱，A使用B，依赖是单向的
+' A-->B：A关联B，B是A的属性
+' A<|-B：A是基类，B是派生类
+' A<|..B：实现，B实现约束A
+' Ao--B：聚合，特殊的依赖，不负责B的生命周期，除语义外，和普通依赖没有区别
+' A*--B：组合，特殊的依赖，负责B的生命周期
+    src.vs.code.electronmain.main.CodeMain ..> BufferLogService
+    src.vs.code.electronmain.main.CodeMain ..> ServiceCollection
+    src.vs.code.electronmain.main.CodeMain ..> BufferLogService
+    src.vs.code.electronmain.main.CodeMain ..> EnvironmentService
+    src.vs.code.electronmain.main.CodeMain ..> MultiplexLogService
+    src.vs.code.electronmain.main.CodeMain ..> FileService
+    src.vs.code.electronmain.main.CodeMain ..> DiskFileSystemProvider
+    class src.vs.code.electronmain.main.CodeMain {
+        + void main()
+        - async Promise<void> startup(args: ParsedArgs)
+        - Promise<unknown> initServices(INativeEnvironmentService environmentServices, ConfigurationService configurationService, StateService stateService)
+        - IProcessEnvironment patchEnvironment(INativeEnvironmentService environmentService)
+        - async Promise<Server> doStartup(ParsedArgs args, ILogService logService, INativeEnvironmentService environmentService, ILifecycleMainService lifecycleMainService, IInstantiationService instantiationService, boolean retry)
+        - void handleStartupDataDirError(INativeEnvironmentService environmentService, NodeJS.ErrnoException error)
+        - void showStartupWarningDialog(string message, string detail)
+        - async Promise<void> windowsAllowSetForegroundWindow(ILaunchMainService launchService, ILogService logService)
+        - void quit(ServicesAccessor, accessor, ExpectedError|Error reason?)
+    }
+    class src.vs.code.electronmain.app.CodeApplication {
+        - IWindowsMainService|undefined windowsMainService
+        - IDialogMainService|undefined dialogMainService
+        CodeApplication(Server mainIpcServer, IProcessEnvironment userEnv)
+        + Promise<void> async startup()
+        - Promise<IInstantiationService> async createServices(string machineId, SharedProcess sharedProcess, Promise<Client<string>> sharedProcessReady)
+        - ICodeWindow[] openFirstWindow(ServicesAccessor accessor, ElectronIPCServer electronIpcServer, Promise<Client<string>> sharedProcessClient)
+        - boolean shouldBlockURI(URI uri)
+        - IWindowOpenable|undefined getWindowOpenableFromProtocolLink(URI uri)
+        - IWindowOpenable getWindowOpenableFromPathSync(string path)
+        - Promise<void> async afterWindowOpen(ServicesAccessor accessor)
+        - void handleRemoteAuthorities()
+    }
+    class src.vs.code.electronmain.window.CodeWindow {
+        CodeWindow(IWindowCreationOptions config)
+        - {static} readonly number MIN_WIDTH = 600
+        - {static} readonly number MIN_HEIGHT = 270
+        - {static} readonly number MAX_URL_LENGTH = 2*1024*1024
+        ' loadURL
+        + void load(INativeWindowConfiguration config, boolean isReload?, boolean disableExtensions?)
+        - string getUrl(INativeWindowConfiguration windowConfiguration)
+        - string doGetUrl(Object config)
+        - string doGetPreloadUrl()
+        + void close()
+        - void destroyWindow()
+    }
+    ISharedProcess <|.. src.vs.code.electronmain.SharedProcess
+    class src.vs.code.electronmain.SharedProcess {
+        - Barrier barrier
+        - BrowserWindow window
+        - Promise<void> readonly _whenReady
+        SharedProcess(string machineId, ProcessEnv userEnv)
+        + void spawn(ProcessEnv userEnv)
+        + void toggle()
+        + void show()
+        + void hide()
+    }
+
+    class src.vs.workbench.electronbrowser.desktopmain.DesktopMain {
+        - readonly NativeWorkbenchEnvironmentService environmentService
+        DesktopMain(INativeWindowConfiguration configuration)
+        - void init()
+        - void reviveUris()
+        + async Promise<void> open()
+        - void registerListeners(Workbench workbench, NativeStorageService storageService)
+        - void onWindowResize(Event e, boolean retry, Workbench workbench)
+        - async Promise<any> initServices()
+        - async Promise<IWorkspaceInitializationPayload> resolveWorkspaceInitializationPayload(ISingleFolderWorkspaceIdentifier folderUri, IResourceIdentityService resourceIdentityService)
+        - async Promise<WorkspaceService> createWorkspaceService(IWorkspaceInitializationPayload payload, FileService fileService, IRemoteAgentService remoteAgentService, ILogService logService)
+        - async Promise<NativeStorageService> createStorageService(IWorkspaceInitializationPayload payload, ILogService logService, IMainProcessService mainProcessService)
+    }
+
+    class src.vs.workbench.browser.workbench.Workbench {
+        + IInstantiationService startup()
+        ' 创建TITLEBAR_PART、ACTIVITYBAR_PART、SIDEBAR_PART、EDITOR_PART、PANEL_PART、STATUSBAR_PART
+        - void renderWorkbench(IInstantiationService instantiationService, NotificationService notificationService, IStorageService storageService, IConfigurationService configurationService)
+        ' 直接调用document.createElement创建各个部分dom实例
+        - HTMLElement createPart(string id, string role, string[] classes)
+        # Part getPart(Parts key)
+    }
+
+    interface src.vs.base.common.lifecycle.IDisposable {
+        + void dispose()
+    }
+    src.vs.base.common.lifecycle.IDisposable <|.. src.vs.base.common.lifecycle.DisposableStore
+    class DisposableStore {
+        + {static} boolean DISABLE_DISPOSED_WARNING
+        - Set<IDisposable> _toDispose
+        - boolean _isDisposed
+        + void dispose()
+        + void clear()
+        + T add<T extends IDisposable>(T t)
+    }
+    src.vs.base.common.lifecycle.IDisposable <|.. src.vs.base.common.lifecycle.Disposable
+    abstract src.vs.base.common.lifecycle.Disposable {
+        + {static} readonly None
+        - readonly DisposableStore _store
+        + void dispose()
+        # T _register<T extends IDisposable>(T t)
+    }
+    src.vs.base.common.lifecycle.Disposable <|-- src.vs.platform.theme.common.themeservice.Theme
+    class src.vs.platform.theme.common.themeservice.Theme {
+
+    }
+    src.vs.platform.theme.common.themeservice.Theme <|-- src.vs.workbench.common.component.Component
+    class src.vs.workbench.common.component.Component {
+
+    }
+    src.vs.workbench.common.component.Component <|-- src.vs.workbench.browser.part.Part
+    abstract class src.vs.workbench.browser.part.Part {
+
+    }
+    src.vs.workbench.browser.part.Part <|-- src.vs.workbench.browser.parts.activitybar.activitybarparts.ActivitybarPart
+    class src.vs.workbench.browser.parts.activitybar.activitybarparts.ActivitybarPart {
+        
+    }
+
+@enduml

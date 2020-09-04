@@ -69,3 +69,34 @@
 * `Link:`
 # vscode参考资料
 [vscode源码参考资料](https://www.cnblogs.com/liulun/p/11037550.html)
+[vscode源码架构分析](https://zhuanlan.zhihu.com/p/96041706)
+[vscode架构设计](https://www.jianshu.com/p/1797d7131512)
+```
+1、vscode采用多进程架构，启动后主要有一下几个进程
+    1-1：后台进程：VScode的入口，主要负责管理编辑器生命周期，进程间通信，自动更新，菜单管理等。
+    1-2：编辑器窗口：由后台进程启动，本身也是多进程架构
+        1-2-1：HTML编写的UI：ActivityBar、SideBar、Panel、Editor、StatusBar、TitleBar
+        1-2-2：Nodejs异步IO：FileService、ConfigurationService
+        1-2-3：插件宿主进程：插件实例、插件实例
+        1-2-4：Debug进程
+        1-2-5：Search进程
+
+```
+## vscode源码分析
+```
+    入口：src/main.js
+        堆栈：Electron->app.once->onReady->startUp:载入主进程vs/code/electron-main/main
+    主进程：vs/code/electron-main/main
+        类：class CodeMain vs/code/electron-main/main
+        堆栈：new CodeMain().main()->this.startup->this.createServices：创建服务
+                                                ->this.initServices
+                                                ->启动服务->创建CodeApplication实例，并启动startup->this.openFirstWindow
+        类：class CodeApplication
+        堆栈 new CodeApplication().startup()->
+    服务（Service）
+        类：ServiceCollection  vs/platform/instantiation/common/serviceCollection.ts
+        类：EnvironmentService vs/platform/environment/node/environmentSErvice.ts
+        类：InstantiationService vs/platform/instantiation/common/serviceCollection.ts
+
+
+```
