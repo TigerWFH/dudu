@@ -1,0 +1,146 @@
+@startuml vscode service
+class SyncDescriptor<T> {
+    + readonly any ctor
+    + readonly any[] staticArguments
+    + readonly boolean supportsDelayedInstantiation
+    SyncDescriptor(any: ctor, any[] staticArguments, boolean supportsDelayInstantiation)
+}
+interface Error {
+    + string stack?
+}
+Error <|-- src.vs.code.electronmain.main.ExpectedError
+class src.vs.code.electronmain.main.ExpectedError {
+    + readonly boolean isExpected
+}
+interface IDisposable {}
+IDisposable <|.. Disposable
+abstract class Disposable {}
+IDisposable <|-- src.vs.platform.log.common.log.ILogger
+interface src.vs.platform.log.common.log.ILogger {
+    + Event<LogLevel> onDidChangeLogLevel
+    + LogLevel getLevel()
+    + void setLevel(LogLevel level)
+    + void trace(string message, any[] args)
+    + void debug(string message, any[] args)
+    + void info(string message, any[] args)
+    + void warn(string message, any[] args)
+    + void error(string|Error message, any[] args)
+    + void critical(string|Error message, any[] args)
+    + void flush()
+}
+src.vs.platform.log.common.log.ILogger <|-- src.vs.platform.log.common.log.ILogService
+interface src.vs.platform.log.common.log.ILogService {
+    + readonly undefined _serviceBrand
+}
+Disposable <|-- src.vs.platform.log.common.log.AbstractLogService
+abstract class src.vs.platform.log.common.log.AbstractLogService {
+    - LogLevel level
+    - readonly Emitter<LogLevel> _onDidChangeLogLevel
+    + readonly Event<LogLevel> onDidChangeLogLevel
+    + void setLevel(LogLevel level)
+    + LogLevel getLevel()
+}
+src.vs.platform.log.common.log.AbstractLogService <|-- src.vs.platform.log.common.log.ConsoleLogMainService
+src.vs.platform.log.common.log.ILogService <|.. src.vs.platform.log.common.log.ConsoleLogMainService
+class src.vs.platform.log.common.log.ConsoleLogMainService {
+    ConsoleLogMainService(LoggerChannelClient client, LogLevel logLevel)
+}
+src.vs.platform.log.common.log.AbstractLogService <|-- src.vs.platform.log.common.log.MultiplexLogService
+src.vs.platform.log.common.log.ILogService <|.. src.vs.platform.log.common.log.MultiplexLogService
+class src.vs.platform.log.common.log.MultiplexLogService {
+    MultiplexLogService(ReadonlyArray<ILogService> logServices)
+    + void setLevel(LogLevel level)
+    + void trace(string message, any[] args)
+    + void debug(string message, any[] args)
+    + void info(string message, any[] args)
+    + void warn(string message, any[] args)
+    + void error(string|Error message, any[] args)
+    + void critical(string|Error message, any[] args)
+    + void flush()
+    + void dispose()
+}
+
+src.vs.platform.log.common.log.ILogService <|.. src.vs.platform.log.common.bufferlog.BufferLogService
+src.vs.platform.log.common.log.AbstractLogService <|-- src.vs.platform.log.common.bufferlog.BufferLogService
+class src.vs.platform.log.common.bufferlog.BufferLogService {
+    - ILog[] buffer
+    - ILogService|undefined _logger
+    BufferLogService(LogLevel logLevel)
+    + void trace(string message, any[] ...args)
+    + void debug(string message, any[] ...args)
+    + void info(string message, any[] ...args)
+    + void warn(string message, any[] ...args)
+    + void error(string | Error message, any[] ...args)
+    + void critical(string | Error message, any[] ...args)
+    + void dispose()
+    + void flush()
+}
+class src.vs.platform.instantiation.common.servicecollection.ServiceCollection {
+    - Map<ServiceIdentifier<any>, any> _entries
+    ServiceCollection(...entries)
+    + T|SyncDescriptor<T> set<T>(ServiceIdentifier<T> id, T|SyncDescriptor<T> instanceOrDescriptor)
+    + boolean has(ServiceIdentifier<any> id)
+    + T|SyncDescriptor<T> get<T>(ServiceIdentifier<T> id)
+}
+interface src.vs.platform.common.environment.IEnvironmentService {
+    + readonly undefined _serviceBrand
+    ' user roaming data
+    + URI userRoamingDataHome
+    + URI settingsResource
+    + URI keybindingsResource
+    + URI keyboardLayoutResource
+    + URI argvResource
+    + URI snippetsHome
+    ' data paths
+    + URI backupHome
+    + URI untitledWorkspacesHome
+    + URI globalStorageHome
+    + URI workspaceStorageHome
+    ' settings sync
+    + URI userDataSyncLogResource
+    + URI userDataSyncHome
+    + any sync
+    + boolean enableSyncByDefault
+    ' extension development
+    + IExtensionHostDebugParams debugExtensionHost
+    + boolean isExtensionDevelopment
+    + boolean|string[] disableExtensions
+    + URI[] extensionDevelopmentLocationURI?
+    + URI extensionTestsLocationURI?
+    + string[] extensionEnabledProposedApi
+    + boolean logExtensionHostCommunication?
+    ' logging
+    + string logsPath
+    + string logLevel?
+    + boolean verbose
+    + boolean isBuilt
+    ' misc
+    + boolean disableTelemetry
+    + URI serviceMachineIdResource
+}
+src.vs.platform.common.environment.IEnvironmentService <|-- src.vs.platform.environment.node.environmentservice.INativeEnvironmentService
+interface src.vs.platform.environment.node.environmentservice.INativeEnvironmentService {
+    + ParsedArgs args
+    + string appRoot
+    + string execPath
+    + URI appSettingsHome
+    + URI userHome
+    + URI machineSettingsResource
+    + string backupWorkspacesPath
+    + string nodeCachedDataDir
+    + string mainIPCHandle
+    + string sharedIPCHandle
+    + string installSourcePath
+    + string extensionsPath?
+    + string extensionsDownloadPath
+    + string builtinExtensionsPath
+    + string driverHandle?
+    + boolean driverVerbose
+    + boolean disableUpdates
+    + boolean sandbox
+}
+src.vs.platform.environment.node.environmentservice.INativeEnvironmentService <|-- src.vs.platform.environment.node.environmentservice.EnvironmentService
+class src.vs.platform.environment.node.environmentservice.EnvironmentService {
+    ' 获取各种URI
+}
+@enduml

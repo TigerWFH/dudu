@@ -1,0 +1,22 @@
+@startuml lifecycle class and interface实现:src.vs.base.common.lifecycle
+    interface IDisposable {
+        + void dispose()
+    }
+    IDisposable <|.. Disposable
+    abstract class Disposable {
+        + {static} readonly any None
+        - readonly DisposableStore _store
+        Disposable()
+        + void dispose()
+        # T _register<T extends IDisposable>(T t)
+    }
+    IDisposable <|.. DisposableStore
+    class DisposableStore {
+        + {static} boolean DISABLE_DISPOSED_WARNING
+        - Set<IDisposable> _toDispose
+        - boolean _isDisposed
+        + void dispose()
+        + void clear()
+        + T add<T extends IDisposable>(T t)
+    }
+@enduml

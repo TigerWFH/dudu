@@ -1,0 +1,25 @@
+@startuml IPC
+    interface IChannelServer<TContext> {}
+    interface IRoutingChannelClient<TContext> {}
+    interface IConnectionHub<TContext> {}
+    interface IDisposable {}
+    IChannelServer <|.. IPCServer
+    IRoutingChannelClient <|.. IPCServer
+    IConnectionHub <|.. IPCServer
+    IDisposable <|.. IPCServer
+    class IPCServer<TContext = string> {
+        - Map<string, IServerChannel<IContext>>
+        - Set<Connection<IContext>> _connections
+        - readonly Emitter<Connection<TContext>> _onDidAddConnection
+        + readonly Event<Connection<TContext>> onDidRemoveConnection
+        - readonly Emitter<Connection<TContext>> _onDidRemoveConnection
+        + readonly Event<Connection<TContext>> onDidRemoveConnection
+        IPCServer(Event<ClientConnectionEvent> onDidClientConnect)
+        + T getChannel<T extends IChannel>(string channelName, IClientRouter<TContext> route)
+        + T getChannel<T extends IChannel>(string channelName, function clientFilter)
+        + T getChannel<T extends IChannel>(string channelName, IClientRouter<TContext> routeOrClientFilter)
+        - any getMulticastEvent(string channelName, any clientFilter)
+        + void registerChannel(string channelName, IServerChannel<TContext> channel)
+        + void dispose()
+    }
+@enduml
