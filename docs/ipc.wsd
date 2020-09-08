@@ -1,7 +1,26 @@
 @startuml IPC
-    interface IChannelServer<TContext> {}
+    interface IChannel{
+        + Promise<T> call<T>(string command, any arg?, CancellationToken cancellationToken)
+        + Event<T> listen<T>(string event, any arg?)
+    }
+    interface IServerChannel<TContext=string>{
+        + Promise<T> call<T>(TContext ctx, string command, any arg?, CancellationToken cancellationToken?)
+        + Event<T> listen<T>(TContext ctx, string event, any arg?)
+    }
+    interface IMessagePassingProtocol {
+        + void send(VSBuffer buffer)
+        + Promise<void> drain()?
+        + Event<VSBuffer> onMessage
+    }
+    interface IChannelServer<TContext = string> {
+        + void registerChannel(string channelName, IServerChannel<TContext> channel)
+    }
     interface IRoutingChannelClient<TContext> {}
-    interface IConnectionHub<TContext> {}
+    interface IConnectionHub<TContext> {
+        + readonly Connection<TContext>[] _connections
+        + readonly Event<Connection<TContext>> onDidAddConnection
+        + readonly Event<Connection<TContext>> onDidRemoveConnection
+    }
     interface IDisposable {}
     IChannelServer <|.. IPCServer
     IRoutingChannelClient <|.. IPCServer
@@ -14,7 +33,7 @@
         + readonly Event<Connection<TContext>> onDidRemoveConnection
         - readonly Emitter<Connection<TContext>> _onDidRemoveConnection
         + readonly Event<Connection<TContext>> onDidRemoveConnection
-        IPCServer(Event<ClientConnectionEvent> onDidClientConnect)
+        + IPCServer(Event<ClientConnectionEvent> onDidClientConnect)
         + T getChannel<T extends IChannel>(string channelName, IClientRouter<TContext> route)
         + T getChannel<T extends IChannel>(string channelName, function clientFilter)
         + T getChannel<T extends IChannel>(string channelName, IClientRouter<TContext> routeOrClientFilter)
@@ -22,4 +41,99 @@
         + void registerChannel(string channelName, IServerChannel<TContext> channel)
         + void dispose()
     }
+    interface Client<TContext> {
+        + readonly TContext ctx
+    }
+    interface IClientRouter<TContext=string> {
+        + Promise<Client<TContext>> routeCall(IConnectionHub<TContext> hub, string command, any arg?, CancellationToken cancellationToken)
+        + Promise<Client<TContext>> routeEvent(IConnectionHub<TContext> hub, string event, any arg?)
+    }
+    interface IChannelClient {
+        + T getChannel<T extends IChannel>(string channelName)
+    }
+    IChannelClient <|.. IPCClient
+    IChannelServer <|.. IPCClient
+    IDisposable <|.. IPCClient
+    class IPCClient<TContext=string> {
+        - ChannelClient channelClient
+        - ChannelServer<TContext> channelServer
+        IPCClient(IMessagePassingProtocol protocol, TContext ctx, IIPCLogger|null ipcLogger)
+        + T getChannel<T extends IChannel>(string channelName)
+        + void registerChannel(string channelName, IServerChannel<TContext> channel)
+        + void dispose()
+    }
+    interface IReader {
+        + VSBuffer read(number bytes)
+    }
+    interface IWrite {
+        + void write(VSBuffer buffer)
+    }
+    IReader <|.. BufferReader
+    class BufferReader {
+        - muber pos
+        BufferReader(VSBuffer buffer)
+        + VSBuffer read(number bytes)
+    }
+    IWrite <|.. BufferWrite
+    class BufferWrite {
+        - VSBuffer[] buffers
+        + VSBuffer buffer()
+        + void write(VSBuffer buffer)
+    }
+    IChannelServer <|.. ChannelServer
+    IDisposable <|.. ChannelServer
+    class ChannelServer<TContext=string> {
+        - Map<string, IServerChannel<TContext>> channels
+        - Map<number, IDisposable> activeRequests
+        - IDisposable|null protocolListener
+        - Map<string, PendingRequest[]> pendingRequests
+        ChannelServer(IMessagePassingProtocol protocol, TContext ctx, IIPCLogger|null logger, number timeoutDelay)
+        + void registerChannel(string channelName, IServerChannel<TContext> channel)
+        - void sendResponse(IRawResponse response)
+        - number send(any header, any body)
+        - number sendBuffer(VSBuffer message)
+        - void onRawMessage(VSBuffer message)
+        - void onPromise(IRawPromiseRequest request)
+        - void onEventListen(IRawEventListenRequest request)
+        - void disposeActiveRequest(IRawRequest request)
+        - void collectPendingRequest(IRawPromiseRequest|IRawEventListenRequest request)
+        - void flushPendingRequests(string channelName)
+        + void dispose()
+    }
+    interface IIPCLogger {
+        + void logIncoming(number msgLength, number requestId, RequestInitiator initiator, string str, any data?)
+        + void logOutgoing(number msgLength, number requestId, RequestInitiator initiator, string str, any data?)
+    }
+    IChannelClient <|.. ChannelClient
+    IDisposable <|.. ChannelClient
+    class ChannelClient {
+        - State state
+        - Set<IDisposable> activeRequests
+        - Map<number, IHandler> handlers
+        - number lastRequestId
+        - IDisposable|null protocolListener
+        - IIPCLogger|null logger
+        - readonly Emitter<void> _onDidInitialize
+        ChannelClient(IMessagePassingProtocol protocol, IIPCLogger|null logger)
+        + T getChannel<T extends IChannel>(string channelName)
+        - Promise<any> requestPromise(string channelName, string name, any arg?, CancellationToken cancellationToken)
+        - Event<any> requestEvent(string channelName, string name, any arg?)
+        - void sendRequest(IRawRequest request)
+        - number send(any header, any body)
+        - number sendBuffer(VSBuffer message)
+        - void onBuffer(VSBuffer message)
+        - void onResponse(IRawResponse response)
+        - Promise<void> whenInitialized()
+        + void dispose()
+    }
+    interface ClientConnectionEvent {
+        + IMessagePassingProtocol protocol
+        + Event<void> onDidClientDisconnect
+    }
+    Client <|-- Connection
+    interface Connection<TContext> {
+        + readonly ChannelServer<TContext> channelServer
+        + readonly ChannelClient channelClient
+    }
+
 @enduml

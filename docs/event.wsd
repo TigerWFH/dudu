@@ -1,0 +1,57 @@
+@startuml 事件系统 src.vs.base.common.event
+    ' 资源释放接口 disposable：用后待释放的资源；dispose：释放资源
+    ' 使用DisposableStore可以追踪leaked disposables或者直接继承Disposable
+    interface IDisposable {
+        + void dispose()
+    }
+    IDisposable <|..> DisposableStore
+    class DisposableStore {
+        {static} boolean DISABLE_DISPOSED_WARNING
+        - Set<IDisposable> _toDispose
+        - boolean _isDisposed
+        ' Dispose of all registered disposables and mark this object as disposed
+        + void dispose()
+        ' Dispose of all registered disposables but do not mark this object as disposed
+        + void clear()
+        + T add<T extends IDisposable>(T t)
+
+    }
+    IDisposable <|..> Disposable
+    DisposableStore <--* Disposable
+    abstract class Disposable {
+        {static} readonly any None
+        - readonly DisposableStore _store
+        Disposable()
+        + void dispose()
+        # T _register<T extends IDisposable>(T t)
+    }
+    ' 函数签名
+    interface Event<T> {
+        (listener: (e: T) => any, any thisArgs?, IDisposable[]|DisposableStore disposable?):IDisposable
+    }
+    ' namespace Event
+    interface event.NodeEventEmitter {
+        + unknown on(string|symbol event, Function listener)
+        + unknown removeListener(string|symbol event, Function listener)
+    }
+    interface event.DOMEventEmitter {
+        + void addEventListener(string|symbol event, Function: listener)
+        + void removeEventListener(string|symbol event, Function: listener)
+    }
+    interface EmitterOptions {
+        + Function onFirstListenerAdd?
+        + Function onFirstListenerDidAdd?
+        + Function onListenerDidAdd?
+        + Function onLastListenerRemove?
+        + Function leakWarningThreshold?
+    }
+    class LeakageMonitor {
+        - Map<string, number>|undefined _stacks
+        - number _warnCountdown
+        LeakageMonitor(number customThreshold, string name)
+        + void dispose()
+        + any check(number listenerCount)
+    }
+    class Emitter<T> {
+    }
+@enduml
