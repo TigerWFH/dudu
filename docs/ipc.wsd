@@ -1,19 +1,42 @@
 @startuml IPC
+    ' An `IChannel` is an abstraction over a collection of commands
+    ' You can `call` several commands on a channel, each taking at
+    ' most one single argument. A `call` always returns a promise
+    ' with at most one single return value.
     interface IChannel{
         + Promise<T> call<T>(string command, any arg?, CancellationToken cancellationToken)
         + Event<T> listen<T>(string event, any arg?)
     }
+    ' An `IChannelClient` has access to a collection of channels. You are able to get those channels, given their channel name.
+    interface IChannelClient {
+        + T getChannel<T extends IChannel>(string channelName)
+    }
+    ' counterpart：某人的counter part是指与他有相似职位的人；某物的counter part是指与它有相似功能的物
+    ' An `IServerChannel` is the counter part to `IChannel`,on the server-side.
     interface IServerChannel<TContext=string>{
         + Promise<T> call<T>(TContext ctx, string command, any arg?, CancellationToken cancellationToken?)
         + Event<T> listen<T>(TContext ctx, string event, any arg?)
+    }
+    ' An `IChannelServer` hosts a collection of channels. You are able to register channels onto it, provided a channel name.
+    interface IChannelServer<TContext = string> {
+        + void registerChannel(string channelName, IServerChannel<TContext> channel)
     }
     interface IMessagePassingProtocol {
         + void send(VSBuffer buffer)
         + Promise<void> drain()?
         + Event<VSBuffer> onMessage
     }
-    interface IChannelServer<TContext = string> {
-        + void registerChannel(string channelName, IServerChannel<TContext> channel)
+    interface IClientRouter<TContext=string>{
+        + Promise<Client<TContext>> routeCall(IConnectionHub<TContext> hub, string command, any arg?, CancellationToken cancellationToken?)
+        + Promise<CLient<TContext>> routeEvent(IConnectionHub<TContext> hub, string event, any arg?)
+    }
+    ' Similar to the `IChannelClient`, you can get channels from this
+    ' collection of channels. The difference being that in the
+    ' `IRoutingChannelClient`, there are multiple clients providing
+    ' the same channel. You'll need to pass in an `IClientRouter` in
+    ' order to pick the right one
+    interface IRouteingChannelClient<TContext=string> {
+        + T getChannel<T extends IChannel>(string channelName, IClientRouter<TContext> router?)
     }
     interface IRoutingChannelClient<TContext> {}
     interface IConnectionHub<TContext> {
@@ -26,6 +49,13 @@
     IRoutingChannelClient <|.. IPCServer
     IConnectionHub <|.. IPCServer
     IDisposable <|.. IPCServer
+    IServerChannel <.. IPCServer
+    Connection <.. IPCServer
+    Emitter <--* IPCServer
+    IClientRouter <.. IPCServer
+    ' An `IPCServer` is both a channel server and a routing channel client
+    ' As the owner of a protocol, you should extend both this
+    ' and the `IPCClient` classes to get IPC implementations for your protocol.
     class IPCServer<TContext = string> {
         - Map<string, IServerChannel<IContext>>
         - Set<Connection<IContext>> _connections
@@ -44,16 +74,19 @@
     interface Client<TContext> {
         + readonly TContext ctx
     }
+    ' An `IClientRouter` is responsible for routing calls to specific channels
+    ' in scenarios in which there are multiple possible channels (each from a separate client) to pick from.
     interface IClientRouter<TContext=string> {
         + Promise<Client<TContext>> routeCall(IConnectionHub<TContext> hub, string command, any arg?, CancellationToken cancellationToken)
         + Promise<Client<TContext>> routeEvent(IConnectionHub<TContext> hub, string event, any arg?)
     }
-    interface IChannelClient {
-        + T getChannel<T extends IChannel>(string channelName)
-    }
     IChannelClient <|.. IPCClient
     IChannelServer <|.. IPCClient
     IDisposable <|.. IPCClient
+    ' An `IPCClient` is both a channel client and a channel server.
+    ' As the owner of a protocol, you should extend both this
+    ' and the `IPCClient` classes to get IPC implementations
+    ' for your protocol.
     class IPCClient<TContext=string> {
         - ChannelClient channelClient
         - ChannelServer<TContext> channelServer
