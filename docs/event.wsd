@@ -52,6 +52,38 @@
         + void dispose()
         + any check(number listenerCount)
     }
+    LeakageMonitor <--* Emitter
     class Emitter<T> {
+        - {static} readyonly EmitterOptions _noop
+        - readyonly LeakageMonitor _leakageMon
+        - boolean disposed
+        - Event<T> _event?
+        - LinkedList<[Listener<T>, T]> _deliveryQueue?
+        # LinkedList<Listener<T>> _listeners?
+        Emitter(EmitterOptions options?)
+        + Event<T> event()
+        + void fire(T event)
+        + void dispose()
+
+    }
+    ' 应用:谁想使用事件系统，谁就组合一个Emitter对象
+    Emitter <--* WindowManager
+    class WindowManager {
+        + {static} readonly INSTANCE = new WindowManager
+        - number _zoomLevel = 0
+        - readonly Emitter<number> _onDidChangeZoomLevel = new Emitter<number>
+        + readonly Event<number> onDidChangeZoomLevel = this._onDidChangeZoomLevel.event
+        - number _zoomFactor = 1
+        - boolean _fullscreen = false
+        - readonly Emitter<void> _onDidChangeFullscreen = new Emitter<void>
+        + number getZoomLevel()
+        + number getTimeSinceLastZoomLevelChanged()
+        + void setZoomLevel(number zoomLevel, boolean isTrusted)
+        + number getZoomFactor()
+        + void setZoomFactor(number zoomFactor)
+        + number getPixelRatio()
+        + readonly Event<void> onDidChangeFullscreen = this._onDidChangeFullscreen.event
+        + void setFullscreen(boolean fullscreen)
+        + boolean isFullscreen()
     }
 @enduml
