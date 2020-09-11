@@ -133,7 +133,9 @@
     ' and the `IPCClient` classes to get IPC implementations for your protocol.
     class IPCServer<TContext = string> {
         - Map<string, IServerChannel<IContext>>
-        - Set<Connection<IContext>> _connections
+        ' _connections会通过get函数返回connections属性
+        - Set<Connection<TContext>> _connections
+        - Connection<TContext>[] connections
         - readonly Emitter<Connection<TContext>> _onDidAddConnection
         + readonly Event<Connection<TContext>> onDidRemoveConnection
         - readonly Emitter<Connection<TContext>> _onDidRemoveConnection
@@ -174,6 +176,19 @@
     class IPCLogger {
 
     }
+    ' 应用
+    class Server {
+        - {static} Event<ClientConnectionEvent> toClientConnectionEvent(NetServer server)
+        - NetServer|null server
+        Server(NetServer)
+        + void dispose()
+    }
+    class CClient<TContent=string>{
+        + {static} Client<TContext> fromSocket<TContext=string>(ISocket socket, TContext id)
+        get Event<void> onClose()
+        Client(Protocol|PersistentProtocol protocol, TContext id, IIPCLogger ipcLoger)
+        + void dispose()
+    }
     IReader <|-- BufferReader
     IWriter <|-- BufferWriter
     IChannelServer <|.. ChannelServer
@@ -202,6 +217,9 @@
     IBaseChannelOptions <|-- IChannelReceiverOptions
     IBaseChannelOptions <|-- IChannelSenderOptions
     IIPCLogger <|.. IPCLogger
+    ' ---------------------------main ---------------------
+    IPCServer <|-- Server
+    IPCClient <|-- CClient
     together {
         class ChannelClient
         class ChannelServer
