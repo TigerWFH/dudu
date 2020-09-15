@@ -1,0 +1,26 @@
+@startuml Test Demo
+    interface IChannel {}
+    interface IServerChannel {}
+    interface IMessagePassingProtocol {}
+    interface CLientConnectionEvent {}
+    class IPCServer {}
+    class IPCClient {}
+    ' ------------------------------
+    class QueueProtocol {
+        - boolean buffering
+        - VSBuffer[] buffers
+    }
+    class TestIPCClient {}
+    class TestIPCServer {}
+    interface ITestService {}
+    class TestService {}
+    class TestChannel {}
+    class TestChannelClient {}
+    IMessagePassingProtocol <|.. QueueProtocol
+    IPCClient <|-- TestIPCClient
+    IPCServer <|-- TestIPCServer
+    ITestService <|.. TestService
+    ' -------------
+    IServerChannel <|.. TestChannel
+    ITestService <|.. TestChannelClient
+@enduml

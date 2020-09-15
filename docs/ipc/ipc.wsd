@@ -1,4 +1,4 @@
-@startuml IPC
+@startuml src.vs.base.parts.ipc.common.ipc.ts
     interface IDisposable {}
     ' An `IChannel` is an abstraction over a collection of commands
     ' You can `call` several commands on a channel, each taking at
@@ -228,4 +228,54 @@
         class IPCServer
         class IPCClient
     }
+@enduml
+@startuml src.vs.base.parts.ipc.common.ipcelectron.ts
+    interface IMessagePassingProtocol {}
+    interface Sender {
+        void send(string channel, unknown msg)
+    }
+    class Protocol {
+        Protocol(Sender sender, Event<VSBuffer> onMessage)
+        + void send(VSBuffer message)
+        + void dispose()
+    }
+    IMessagePassingProtocol <|.. Protocol
+@enduml
+@startuml src.vs.base.parts.ipc.node.ipccp.ts
+    interface IDisposable {}
+    interface IChannelClient {}
+    interface IIPCOptions {
+
+    }
+    class IPCServer<TContext> {}
+    class Server<TContext extends string> {
+
+    }
+    class Client {
+
+    }
+    IPCServer <|-- Server
+    IDisposable <|.. Client
+    IChannelClient <|.. Client
+@enduml
+@startuml extensions.git.src.ipc.ipcServer.ts
+    interface IIPCHandler {
+        + Promise<any> handle(any request)
+    }
+    interface IIPCServer {
+        + readonly string|undefined ipcHandlePath
+        + any getEnv()
+        + Disposable registerHandler(string name, IIPCHandler handler)
+    }
+    class IPCServer {
+        - Map<string IIPCServer> handlers
+        IPCServer(http.Server server, string _ipcHandlePath)
+        + Disposable registerHandler(string name, IIPCHandler handler)
+        - void onRequest(http.IncomingMessage req, http.ServerResponse res)
+        + any getEnv()
+        + void dispose()
+    }
+    Disposable <|-- IIPCServer
+    IIPCServer <|.. IPCServer
+    Disposable <|.. IPCServer
 @enduml
