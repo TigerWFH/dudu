@@ -80,9 +80,13 @@
     }
     class ChannelServer<TContext=string> {
         - Map<string, IServerChannel<TContext>> channels
-        - Map<number, IDisposable> activeRequests
         - IDisposable|null protocolListener
         - Map<string, PendingRequest[]> pendingRequests
+        - TContext ctx
+        - number timeoutDelay
+        - Map<number, IDisposable> activeRequests
+        - IIPCLogger|null logger
+        - IMessagePassingProtocol protocol
         ChannelServer(IMessagePassingProtocol protocol, TContext ctx, IIPCLogger|null logger, number timeoutDelay)
         + void registerChannel(string channelName, IServerChannel<TContext> channel)
         - void sendResponse(IRawResponse response)
@@ -102,12 +106,14 @@
     }
     class ChannelClient {
         - State state
-        - Set<IDisposable> activeRequests
         - Map<number, IHandler> handlers
         - number lastRequestId
         - IDisposable|null protocolListener
-        - IIPCLogger|null logger
         - readonly Emitter<void> _onDidInitialize
+        - Set<IDisposable> activeRequests
+        - IIPCLogger|null logger
+        - IMessagePassingProtocol protocol
+    
         ChannelClient(IMessagePassingProtocol protocol, IIPCLogger|null logger)
         + T getChannel<T extends IChannel>(string channelName)
         - Promise<any> requestPromise(string channelName, string name, any arg?, CancellationToken cancellationToken)
@@ -132,9 +138,7 @@
     ' As the owner of a protocol, you should extend both this
     ' and the `IPCClient` classes to get IPC implementations for your protocol.
     class IPCServer<TContext = string> {
-        - Map<string, IServerChannel<IContext>>
-        ' _connections会通过get函数返回connections属性
-        - Set<Connection<TContext>> _connections
+        - Map<string, IServerChannel<IContext>> channels
         - Connection<TContext>[] connections
         - readonly Emitter<Connection<TContext>> _onDidAddConnection
         + readonly Event<Connection<TContext>> onDidRemoveConnection

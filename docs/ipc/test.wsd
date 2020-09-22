@@ -1,4 +1,5 @@
 @startuml Test Demo
+    class Emitter{}
     interface IChannel {}
     interface IServerChannel {}
     interface IMessagePassingProtocol {}
@@ -9,18 +10,75 @@
     class QueueProtocol {
         - boolean buffering
         - VSBuffer[] buffers
+        - readonly Emitter _onMessage
+        + readonly Event onMessage
+        + void send(VSBuffer buffer)
+        # void receive(VSBuffer buffer)
     }
-    class TestIPCClient {}
-    class TestIPCServer {}
-    interface ITestService {}
-    class TestService {}
-    class TestChannel {}
-    class TestChannelClient {}
+    class TestIPCClient {
+        - readonly Emitter _onDidDisconnect
+        + readonly Event onDidDisconnect
+        TestIPCClient(IMessagePassingProtocol protocol, string id)
+        + void dispose()
+    }
+    class TestIPCServer {
+        - readonly Emitter onDidClientConnect
+        TestIPCServer()
+        + IPCClient<string> createConnection(string id)
+    }
+    interface ITestService {
+        + Promise<string> marco()
+        + Promise<void> error(string message)
+        + Promise<void> neverComplete()
+        + Promise<void> neverCompleteCT(CancellationToken cancellationToken)
+        + Promise<number> buffersLength(VSBuffer[] buffers)
+        + Promise<URI> marshall(URI uri)
+        + Promise<unknown> context()
+        + Event<string> onPong()
+    }
+    class TestService {
+        - readonly Emitter _onPong
+        + readonly Event onPong
+        + Promise<string> marco()
+        + Promise<void> error(string message)
+        + Promise<void> neverComplete()
+        + Promise<void> neverCompleteCT(CancellationToken cancellationToken)
+        + Promise<number> buffersLength(VSBuffer[] buffers)
+        + Promise<URI> marshall(URI uri)
+        + Promise<unknown> context()
+        + Event<string> onPong()
+    }
+    class TestChannel {
+        - ITestService service
+        TestChannel(ITestService service)
+        + Promise<any> call(unknown _, string command, any arg, CancellationToken cancellationToken)
+        + Event<any> listen(unknown _, string event, any arg?)
+    }
+    class TestChannelClient {
+        - IChannel channel
+        + Event<string> onPong
+        TestChannelClient(IChannel channel)
+        + Promise<string> marco()
+        + Promise<void> error(string message)
+        + Promise<void> neverComplete()
+        + Promise<void> neverCompleteCT(CancellationToken cancellationToken)
+        + Promise<number> buffersLength(VSBuffer[] buffers)
+        + Promise<URI> marshall(URI uri)
+        + Promise<unknown> context()
+        + Event<string> onPong()
+    }
     IMessagePassingProtocol <|.. QueueProtocol
+    Emitter <--* QueueProtocol
     IPCClient <|-- TestIPCClient
+    Emitter <--* TestIPCClient
     IPCServer <|-- TestIPCServer
+    Emitter <--* TestIPCServer
+    QueueProtocol <.. TestIPCServer
+    TestIPCClient <.. TestIPCServer
     ITestService <|.. TestService
     ' -------------
     IServerChannel <|.. TestChannel
+    TestService <.. TestChannel
     ITestService <|.. TestChannelClient
+    TestChannel <.. TestChannelClient
 @enduml
